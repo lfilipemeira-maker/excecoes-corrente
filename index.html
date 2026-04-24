@@ -158,8 +158,6 @@
     <nav class="nav">
       <div class="nav-label">Etapa</div>
       <button class="nav-item" onclick="setEtapa('Silvia',this)">Aguardando Silvia</button>
-      <button class="nav-item" onclick="setEtapa('COO',this)">Aguardando COO</button>
-      <button class="nav-item" onclick="setEtapa('CEO',this)">Aguardando CEO</button>
       <button class="nav-item" onclick="setEtapa('CFO',this)">Aguardando CFO</button>
     </nav>
     <div style="margin-top:auto">
@@ -168,7 +166,7 @@
       </div>
       <div style="font-size:11px;color:var(--text3);padding:.5rem;line-height:1.7;margin-top:8px">
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSfeKAKCN-WJyBIstXZY4XD2wJhyXY9-3iO93ViRs7v-8mVZig/viewform?usp=header" target="_blank" style="color:var(--blue);text-decoration:none;font-size:11px">↗ Formulário Silvia</a><br><br>
-        Fluxo:<br>Silvia → COO → CEO → CFO
+        Fluxo:<br>Silvia → CFO
       </div>
     </div>
   </aside>
@@ -177,7 +175,7 @@
     <div class="topbar">
       <div>
         <div class="topbar-title" id="topbar-title">Todos os pedidos</div>
-        <div class="topbar-sub" id="topbar-sub">fluxo de aprovação por exceção</div>
+        <div class="topbar-sub" id="topbar-sub">Silvia (análise) → CFO (decisão)</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn btn-sm" onclick="carregar()" id="btn-refresh" title="Atualizar">⟳ Atualizar</button>
@@ -255,11 +253,7 @@
   <div class="fgrid one" style="margin-bottom:14px">
     <div class="field"><label>Descrição / contexto</label><textarea id="n-just" placeholder="Contexto e motivo do pedido..."></textarea></div>
   </div>
-  <div class="slabel">Aprovadores adicionais além do CFO</div>
-  <div class="ap-group">
-    <div class="ap-toggle" id="tog-coo" onclick="toggleAp('COO')">COO</div>
-    <div class="ap-toggle" id="tog-ceo" onclick="toggleAp('CEO')">CEO</div>
-  </div>
+
   <div class="mfoot">
     <button class="btn" onclick="closeModal('novo')">Cancelar</button>
     <button class="btn btn-primary" id="btn-salvar" onclick="salvar()">Salvar pedido</button>
@@ -480,8 +474,6 @@ async function carregar() {
       const jaExiste = pedidos.find(p => p.dataCriacao === r[0] && p.origem === 'forms');
       if (jaExiste) return;
       const aps = [];
-      if ((r[6]||'').toLowerCase().includes('sim')) aps.push('COO');
-      if ((r[7]||'').toLowerCase().includes('sim')) aps.push('CEO');
       pedidos.push({
         id: maxId + i + 1,
         cliente: r[1]||'',
@@ -598,7 +590,7 @@ function salvarConfig(){
   carregar();
 }
 
-function buildFluxo(aps){const f=['Silvia'];if(aps.includes('COO'))f.push('COO');if(aps.includes('CEO'))f.push('CEO');f.push('CFO');return f;}
+function buildFluxo(aps){return ['Silvia','CFO'];}
 function getAprovados(p){return p.historico.filter(h=>h.acao==='Aprovado'||h.acao==='Análise registrada').map(h=>h.por);}
 function getRecusadoPor(p){return p.historico.find(h=>h.acao==='Recusado')?.por||null;}
 function getStatus(p){
@@ -650,7 +642,7 @@ function render(){
     const s=getStatus(p),next=getNext(p);
     const silvia=p.historico.find(h=>h.por==='Silvia'&&h.acao==='Análise registrada');
     const waitHtml=s==='pendente'&&next?`<div class="wait-tag">Aguardando: <b>${next==='Silvia'?'Silvia (análise técnica)':next==='CFO'?'CFO — você':next}</b></div>`:'';
-    const showEmail=s==='pendente'&&(next==='COO'||next==='CEO');
+
     return `<div class="card">
       <div class="card-row">
         <div class="card-left">
@@ -665,7 +657,7 @@ function render(){
         <div class="card-right">
           <button class="btn btn-sm" onclick="verDetalhe(${p.id})">Detalhes</button>
           ${s==='pendente'&&next==='Silvia'?`<button class="btn btn-sm btn-purple" onclick="openSilvia(${p.id})">Análise</button>`:''}
-          ${showEmail?`<button class="btn btn-sm btn-email" onclick="gerarEmail(${p.id})">✉ Email ${next}</button>`:''}
+
           ${s==='pendente'&&next&&next!=='Silvia'?`<button class="btn btn-sm btn-primary" onclick="openDecisao(${p.id})">Decisão</button>`:''}
         </div>
       </div>
