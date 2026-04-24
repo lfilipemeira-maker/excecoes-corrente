@@ -416,7 +416,7 @@ async function criarPlanilha() {
   localStorage.setItem(CONFIG_KEY, SHEET_ID);
   // Cabeçalhos
   await sheetsUpdate('Pedidos!A1:J1', [['id','cliente','solicitante','tipo','valor','justificativa','aprovadores','status','dataCriacao','detalhes']]);
-  await sheetsUpdate('Historico!A1:F1', [['pedidoId','acao','por','em','recomendacao','obs']]);
+  await sheetsUpdate('Histórico!A1:F1', [['pedidoId','acao','por','em','recomendacao','obs']]);
   // Dados de exemplo
   const now = fmtDate(new Date());
   await sheetsAppend('Pedidos!A:J', [
@@ -424,7 +424,7 @@ async function criarPlanilha() {
     [2,'Cliente BR00-042','Financeiro','Dispensa de juros','R$ 1.200','Cliente solicita dispensa de juros de boleto vencido alegando falha no envio. Relacionamento de 5 anos sem inadimplência.','','pendente',fmtDate(new Date(Date.now()-864e5)),'{"boleto":"#BR2024-0892","vencimento":"28/02/2026"}'],
     [3,'Cliente BR00-117','Comercial','Prorrogação de vencimento','R$ 48.000','Em negociação de taxa de juros para o mesmo título. Prorrogação de 60 dias para conclusão da negociação.','COO,CEO','pendente',now,'{"boleto":"#BR2024-1043","vencimento":"15/03/2026","dias":"60"}']
   ]);
-  await sheetsAppend('Historico!A:F', [
+  await sheetsAppend('Histórico!A:F', [
     [1,'Pedido criado','Silvia Saito',fmtDate(new Date(Date.now()-2*864e5)),'',''],
     [2,'Pedido criado','Silvia Saito',fmtDate(new Date(Date.now()-864e5)),'',''],
     [2,'Análise registrada','Silvia',fmtDate(new Date(Date.now()-43200000)),'favoravel','Score interno A. Sem inadimplências nos últimos 24 meses. Relacionamento sólido. Valor imaterial. Recomendo aprovação.'],
@@ -448,8 +448,8 @@ async function carregar() {
   try {
     const [rPed, rHist, rForms] = await Promise.all([
       sheetsGet('Pedidos!A2:J1000'),
-      sheetsGet('Historico!A2:F10000'),
-      sheetsGet('Respostas do formulário 1!A2:H1000').catch(() => ({values:[]}))
+      sheetsGet('Histórico!A2:F10000'),
+      sheetsGet('Form Responses 1!A2:H1000').catch(() => ({values:[]}))
     ]);
     const pedRows = rPed.values || [];
     const histRows = rHist.values || [];
@@ -535,7 +535,7 @@ async function salvar() {
   setBusy('btn-salvar', true);
   try {
     await sheetsAppend('Pedidos!A:J', [[id,cli,sol||'—',tipo,'R$ '+val,just,apStr,'pendente',em,JSON.stringify(det)]]);
-    await sheetsAppend('Historico!A:F', [[id,'Pedido criado','Silvia Saito',em,'','']]);
+    await sheetsAppend('Histórico!A:F', [[id,'Pedido criado','Silvia Saito',em,'','']]);
     selAps=[];
     ge('tog-coo').className='ap-toggle';ge('tog-ceo').className='ap-toggle';
     ['n-cli','n-sol','n-val','n-just'].forEach(id=>{const el=ge(id);if(el)el.value='';});
@@ -553,7 +553,7 @@ async function salvarAnalise() {
   if(!obs){alert('Preencha a análise técnica.');return;}
   setBusy('btn-salvar-analise',true);
   try {
-    await sheetsAppend('Historico!A:F',[[silviaTarget.id,'Análise registrada','Silvia',fmtDate(new Date()),recSilvia,obs]]);
+    await sheetsAppend('Histórico!A:F',[[silviaTarget.id,'Análise registrada','Silvia',fmtDate(new Date()),recSilvia,obs]]);
     closeModal('silvia');
     await carregar();
   } catch(e){alert('Erro: '+e.message);}
@@ -567,7 +567,7 @@ async function decidir(acao) {
   const acaoStr=acao==='aprovar'?'Aprovado':'Recusado';
   setBusy('btn-aprovar',true);setBusy('btn-recusar',true);
   try {
-    await sheetsAppend('Historico!A:F',[[decPedido.id,acaoStr,decAprovador,fmtDate(new Date()),'',obs]]);
+    await sheetsAppend('Histórico!A:F',[[decPedido.id,acaoStr,decAprovador,fmtDate(new Date()),'',obs]]);
     // Atualiza status na aba Pedidos se aprovado pelo CFO ou recusado
     const fluxo=buildFluxo(decPedido.aprovadores);
     const aprovadosApos=[...getAprovados(decPedido),decAprovador];
